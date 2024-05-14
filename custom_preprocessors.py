@@ -9,11 +9,14 @@ class OneHotEncoderForMultiStrFeature(BaseEstimator, TransformerMixin):
         self.delimiter = delimiter
         self.skip_values = skip_values
 
+        self.features_names_out = []
+
     def _create_binary_features_from_str_feature(self, row: pd.Series) -> pd.Series:
         values = row[self.str_feature_name].split(self.delimiter)
         for v in values:
             if v in self.skip_values: continue
             row['is_{0}_{1}'.format(*[self.str_feature_name,v])] = 1
+            self.features_names_out.append('is_{0}_{1}'.format(*[self.str_feature_name,v]))
         return row
 
     def one_hot_encoding_for_multi_str_feature(self, data_frame: pd.DataFrame) -> pd.DataFrame:
@@ -28,4 +31,7 @@ class OneHotEncoderForMultiStrFeature(BaseEstimator, TransformerMixin):
     
     def transform(self,X):
         return self.one_hot_encoding_for_multi_str_feature(X)
+    
+    def get_feature_names_out(self):
+        return self.features_names_out
 
