@@ -1,6 +1,6 @@
 from sklearn.compose import ColumnTransformer
 from custom_preprocessors import OneHotEncoderForMultiStrFeature, DateSplitter, DirectorsAgeTransformer, ContinuationFinder, DirectorEncoder
-from sklearn.discriminant_analysis import StandardScaler
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, MinMaxScaler
 from sklearn.preprocessing import PowerTransformer, RobustScaler
 
 def drop_rows(df):
@@ -12,7 +12,8 @@ def drop_rows(df):
 def get_non_numeric_features_transformer():
     COLS_TO_DROP = ['movie_numerOfVotes',
                     'movie_averageRating', 
-                    'Domestic gross $'
+                    'Domestic gross $',
+                    # 'director_name', #we will see if we will drop this
                     ]
     return ColumnTransformer(
         transformers= [
@@ -20,7 +21,7 @@ def get_non_numeric_features_transformer():
             ("director_professions_OHE", OneHotEncoderForMultiStrFeature("director_professions", skip_values=['casting_director', 'make_up_department']), ["director_professions"]),
             ("production_date_split", DateSplitter(), ["production_date"]),
             ("directors_age", DirectorsAgeTransformer(), ["director_birthYear", "director_deathYear", "production_date"]),
-            ('director_code', DirectorEncoder(), ['director_name']),
+            ('director', OneHotEncoder(), ['director_name']), # we will see if we will drop this
             ('is_continuation', ContinuationFinder(), ['movie_title']),
             ("drop_columns", 'drop', COLS_TO_DROP)
         ],
@@ -46,7 +47,7 @@ def get_features_transformer(gross_transformer: ColumnTransformer=StandardScaler
                     'movie_averageRating', 
                     'Domestic gross $', 
                     "movie_title", 
-                    'director_name',
+                    'director_name', #do not delete this
                     "genres",
                     "director_professions",
                     "production_date",
