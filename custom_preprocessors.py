@@ -1,6 +1,36 @@
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
+import re
+
+class StringiEncoder(BaseEstimator, TransformerMixin):
+    def __init__(self, column: str, top: int, delimiter: str = ',') -> None:
+        super().__init__()
+        self.top = top
+        self.column = column
+        self.delimiter = delimiter
+        self.cols = []
+
+    def fit(self,X, y=None):
+        return self
+    
+    def transform(self, X):
+        code_column = pd.DataFrame(X[self.column].str.split(self.delimiter).tolist()).stack()
+        code_column = code_column.value_counts().head(self.top).index.tolist()
+
+        for code in code_column:
+            X[f'is_{self.column}_{code}'] = X[self.column].str.contains(code, na=False).astype(int)
+        
+        X[f'is_{self.column}_Other'] = (~X[[f'is_{self.column}_{item}' for item in code_column]].any(axis=1)).astype(int)
+        
+        self.cols = [f'is_{self.column}_{i}' for i in code_column]
+        self.cols.append(f'is_{self.column}_Other')
+        
+        return X.drop(columns=self.column)
+
+    def get_feature_names_out(self, input_features = None):
+        return self.cols
+
 
 class OneHotEncoderForMultiStrFeature(BaseEstimator, TransformerMixin):
     def __init__(self, str_feature_name: str, delimiter: str = ",", skip_values: list = [] ) -> None:
@@ -8,7 +38,6 @@ class OneHotEncoderForMultiStrFeature(BaseEstimator, TransformerMixin):
         self.str_feature_name = str_feature_name
         self.delimiter = delimiter
         self.skip_values = skip_values
-
         self.features_names_out = []
 
     def _create_binary_features_from_str_feature(self, row: pd.Series) -> pd.Series:
@@ -16,7 +45,9 @@ class OneHotEncoderForMultiStrFeature(BaseEstimator, TransformerMixin):
         for v in values:
             if v in self.skip_values: continue
             row['is_{0}_{1}'.format(*[self.str_feature_name,v])] = 1
-        return row
+    
+        return row    
+    
 
     def one_hot_encoding_for_multi_str_feature(self, data_frame: pd.DataFrame) -> pd.DataFrame:
         df = data_frame.apply(lambda row: self._create_binary_features_from_str_feature(row), 
@@ -68,7 +99,36 @@ class DirectorsAgeTransformer(BaseEstimator, TransformerMixin):
     def get_feature_names_out(self, input_features = None):
         return ["director_age", "director_years_since_death"]
 
-
+class ContinuationFinder(BaseEstimator, TransformerMixin):
+    def __init__(self) -> None:
+        super().__init__()
+    
+    def transform(self, X):
+        pattern = r":| \d+$"
+        X["is_continuation"] = X['movie_title'].apply(lambda x: 1 if re.search(pattern, x) else 0)
+        return X.drop(columns = 'movie_title')
+    
+    def fit(self,X, y=None):
+        return self
+    
+    def get_feature_names_out(self, input_features = None):
+        return ["is_continuation"]
+    
+class DirectorEncoder(BaseEstimator, TransformerMixin):
+    def __init__(self) -> None:
+        super().__init__()
+    
+    def transform(self, X):
+        directors = X['director_name'].unique()
+        director_code = {director: i for i, director in enumerate(directors)}
+        X["director_code"] = X['director_name'].map(director_code)
+        return X.drop(columns = 'director_name')
+    
+    def fit(self,X, y=None):
+        return self
+    
+    def get_feature_names_out(self, input_features = None):
+        return ["director_code"]
 
 
 
