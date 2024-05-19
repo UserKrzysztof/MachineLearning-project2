@@ -94,6 +94,7 @@ class DirectorsAgeTransformer(BaseEstimator, TransformerMixin):
         X["director_age"] = X["production_date"].dt.year- X["director_birthYear"]
 
         X["director_years_since_death"] = X["director_deathYear"].apply(lambda x: 0 if x == "alive" else x).astype(dtype=np.int64)
+        X.loc[X["director_years_since_death"] != 0,"director_years_since_death"] = 2024 - X.loc[X["director_years_since_death"] != 0,"director_years_since_death"]
         return X.drop(columns = ["director_birthYear", "director_deathYear", "production_date"])
 
     def get_feature_names_out(self, input_features = None):
