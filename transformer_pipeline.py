@@ -1,8 +1,7 @@
 from sklearn.compose import ColumnTransformer
+from custom_preprocessors import OneHotEncoderForMultiStrFeature, DateSplitter, DirectorsAgeTransformer, ContinuationFinder, DirectorEncoder
 from sklearn.discriminant_analysis import StandardScaler
 from sklearn.preprocessing import PowerTransformer, RobustScaler
-from custom_preprocessors import OneHotEncoderForMultiStrFeature, DateSplitter, DirectorsAgeTransformer, ContinuationFinder, DirectorEncoder
-
 
 def drop_rows(df):
     return df.loc[(df["director_name"] != "-") & 
@@ -28,18 +27,21 @@ def get_non_numeric_features_transformer():
         remainder= "passthrough"
     )
 
-def get_numeric_features_transformer():
+def get_numeric_features_transformer(gross_transformer, budget_transformer, runtime_transformer, approval_transformer):
     return ColumnTransformer(
         transformers= [
-            ("WW_gross_$_box_cox", PowerTransformer(method="box-cox"), ['Worldwide gross $']),
-            ('Production_budget', PowerTransformer(method="box-cox"), ['Production budget $']), #na pałę narazie
-            ("runtime_minutes_Robust", RobustScaler(), ["runtime_minutes"]),
-            ("approval_index", StandardScaler(), ["approval_Index"])
+            ("WW_gross_$_box_cox", gross_transformer, ['Worldwide gross $']),
+            ('Production_budget', budget_transformer, ['Production budget $']),
+            ("runtime_minutes_Robust", runtime_transformer, ["runtime_minutes"]),
+            ("approval_index", approval_transformer, ["approval_Index"])
         ],
         remainder = "passthrough"
     )
 
-def get_features_transformer():
+def get_features_transformer(gross_transformer: ColumnTransformer=StandardScaler(), 
+                             budget_transformer: ColumnTransformer=StandardScaler(), 
+                             runtime_transformer: ColumnTransformer=StandardScaler(), 
+                             approval_transformer: ColumnTransformer=StandardScaler()):
     for_non_numeric = ['movie_numerOfVotes',
                     'movie_averageRating', 
                     'Domestic gross $', 
@@ -49,11 +51,11 @@ def get_features_transformer():
                     "director_professions",
                     "production_date",
                     "director_birthYear", "director_deathYear"]
-    for_numeric = ['Worldwide gross $',"runtime_minutes","approval_Index", 'Production budget $']
+    for_numeric = ['Worldwide gross $',"runtime_minutes","approval_Index",'Production budget $']
 
     return ColumnTransformer(
         transformers= [ 
             ("non_numeric",  get_non_numeric_features_transformer(), for_non_numeric),
-            ("numeric", get_numeric_features_transformer(), for_numeric)
+            ("numeric", get_numeric_features_transformer(gross_transformer, budget_transformer, runtime_transformer, approval_transformer), for_numeric)
         ]
     )
