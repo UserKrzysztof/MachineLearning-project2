@@ -1,5 +1,5 @@
 from sklearn.compose import ColumnTransformer
-from custom_preprocessors import OneHotEncoderForMultiStrFeature, DateSplitter, DirectorsAgeTransformer, ContinuationFinder, DirectorEncoder
+from custom_preprocessors import OneHotEncoderForMultiStrFeature, DateSplitter, DirectorsAgeTransformer, ContinuationFinder, DirectorEncoder, StringiEncoder
 from sklearn.preprocessing import StandardScaler, OneHotEncoder, MinMaxScaler
 from sklearn.preprocessing import PowerTransformer, RobustScaler
 
@@ -17,11 +17,11 @@ def get_non_numeric_features_transformer():
                     ]
     return ColumnTransformer(
         transformers= [
-            ("genres_OHE", OneHotEncoderForMultiStrFeature("genres",skip_values=["\\N","News"]), ["genres"]),
-            ("director_professions_OHE", OneHotEncoderForMultiStrFeature("director_professions", skip_values=['casting_director', 'make_up_department']), ["director_professions"]),
+            ("genres_OHE", OneHotEncoderForMultiStrFeature("genres",skip_values=["\\N","News"], enable_top_n=5), ["genres"]),
+            ("director_professions_OHE", OneHotEncoderForMultiStrFeature("director_professions", enable_top_n=3), ["director_professions"]),
             ("production_date_split", DateSplitter(), ["production_date"]),
             ("directors_age", DirectorsAgeTransformer(), ["director_birthYear", "director_deathYear", "production_date"]),
-            ('director', OneHotEncoder(), ['director_name']), # we will see if we will drop this
+            ('director', DirectorEncoder(), ['director_name']), # we will see if we will drop this
             ('is_continuation', ContinuationFinder(), ['movie_title']),
             ("drop_columns", 'drop', COLS_TO_DROP)
         ],
