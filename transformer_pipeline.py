@@ -13,7 +13,7 @@ def get_non_numeric_features_transformer():
     COLS_TO_DROP = ['movie_numerOfVotes',
                     'movie_averageRating', 
                     'Domestic gross $',
-                    # 'director_name', #we will see if we will drop this
+                    'director_name', #we will see if we will drop this
                     ]
     return ColumnTransformer(
         transformers= [
@@ -21,7 +21,7 @@ def get_non_numeric_features_transformer():
             ("director_professions_OHE", OneHotEncoderForMultiStrFeature("director_professions", enable_top_n=3), ["director_professions"]),
             ("production_date_split", DateSplitter(), ["production_date"]),
             ("directors_age", DirectorsAgeTransformer(), ["director_birthYear", "director_deathYear", "production_date"]),
-            ('director', DirectorEncoder(), ['director_name']), # we will see if we will drop this
+            # ('director', DirectorEncoder(), ['director_name']), # we will see if we will drop this
             ('is_continuation', ContinuationFinder(), ['movie_title']),
             ("drop_columns", 'drop', COLS_TO_DROP)
         ],
