@@ -141,6 +141,13 @@ class DirectorEncoder(BaseEstimator, TransformerMixin):
     
     def get_feature_names_out(self, input_features = None):
         return ["director_code"]
+    
+class IdentityTransformer(BaseEstimator, TransformerMixin):
+    def fit(self, X, y=None):
+        return self
+    
+    def transform(self, X, y=None):
+        return X
 
 
 
