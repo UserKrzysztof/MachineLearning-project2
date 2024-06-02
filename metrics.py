@@ -64,3 +64,15 @@ def min_distance_between_clusters(model, X):
                 min_dist = np.min(distance.cdist(X[cluster1_indices], X[cluster2_indices]))
                 global_min_dist = np.min([global_min_dist, min_dist])
     return global_min_dist
+
+def min_distance_between_clusters2(X, labels):
+    clusters = set(labels)
+    global_min_dist = np.inf
+    for cluster1 in clusters:
+        cluster1_indices = np.where(labels == cluster1)[0]
+        for cluster2 in clusters:
+            if cluster1 != cluster2:
+                cluster2_indices = np.where(labels == cluster2)[0]
+                min_dist = np.min(distance.cdist(X[cluster1_indices], X[cluster2_indices]))
+                global_min_dist = np.min([global_min_dist, min_dist])
+    return global_min_dist
