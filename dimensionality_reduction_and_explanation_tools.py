@@ -27,7 +27,7 @@ def get_nmf_plots(data, list_of_clusters):
 
 def scatter(x, colors):
     palette = np.array(sns.color_palette("hls", len(np.unique(colors))))
-    f = plt.figure(figsize=(8, 8))
+    f = plt.figure(figsize=(20, 20))
     ax = plt.subplot(aspect='equal')
     sc = ax.scatter(x[:,0], x[:,1], lw=0, s=40,
                     c=palette[colors.astype(np.int64)])
@@ -40,7 +40,7 @@ def scatter(x, colors):
     for i in range(len(np.unique(colors))):
         # Position of each label.
         xtext, ytext = np.median(x[colors == i, :], axis=0)
-        txt = ax.text(xtext, ytext, str(i), fontsize=24)
+        txt = ax.text(xtext, ytext, str(i), fontsize=10)
         txts.append(txt)
 
     return f, ax, sc, txts
